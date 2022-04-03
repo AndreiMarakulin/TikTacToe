@@ -23,6 +23,14 @@ body {
   background-color: #ebe9e9;
 }
 
+.win-cell {
+  background: rgb(255, 209, 111);
+}
+
+.win-cell:hover {
+  background: rgb(255, 209, 111);
+}
+
 .buttons {
   display: flex;
   flex-direction: row;
