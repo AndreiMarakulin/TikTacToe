@@ -25,7 +25,7 @@ class TicTacToe {
       cell.setAttribute("class", "game-field_cell");
       field.appendChild(cell);
     }
-    field.style.gridTemplateColumns = "repeat(" + n + ", auto)";
+    field.style.gridTemplateColumns = `repeat(${n}, auto)`;
   }
 
   #checkIsWinHorizontal(row, symbol) {
@@ -111,9 +111,10 @@ class TicTacToe {
   }
 
   makeMove(row, column) {
+    console.log(this.#moves);
     let symbol = this.getSymbol();
     this.#gameField[row][column] = symbol;
-    this.#moves.push([row, column]);
+    this.#moves[this.#move] = [row, column];
     this.#move++;
     this.printResult(row, column, symbol);
   }
