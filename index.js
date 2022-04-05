@@ -21,7 +21,7 @@ class TicTacToe {
     const field = document.querySelector(".game-field");
     field.innerHTML = "";
     for (let i = 0; i < n ** 2; i++) {
-      let cell = document.createElement("div");
+      const cell = document.createElement("div");
       cell.setAttribute("class", "game-field_cell");
       field.appendChild(cell);
     }
@@ -111,7 +111,7 @@ class TicTacToe {
   }
 
   makeMove(row, column) {
-    let symbol = this.getSymbol();
+    const symbol = this.getSymbol();
     this.#gameField[row][column] = symbol;
     if (this.#moves.length > this.#move) {
       this.#moves = this.#moves.slice(0, this.#move);
@@ -138,7 +138,7 @@ class TicTacToe {
       return;
     }
     this.#move--;
-    let [row, column] = this.#moves[this.#move];
+    const [row, column] = this.#moves[this.#move];
     this.#gameField[row][column] = null;
     document.querySelectorAll(".game-field_cell")[
       row * this.#n + column
@@ -155,7 +155,7 @@ class TicTacToe {
     if (this.#move === this.#moves.length) {
       return;
     }
-    let [row, column] = this.#moves[this.#move];
+    const [row, column] = this.#moves[this.#move];
     this.#gameField[row][column] = this.getSymbol(this.#move);
     this.markCell(
       document.querySelectorAll(".game-field_cell")[row * this.#n + column],
@@ -167,7 +167,7 @@ class TicTacToe {
   }
 
   printWinner(str) {
-    let div = document.createElement("div");
+    const div = document.createElement("div");
     div.innerText = str;
     div.setAttribute("class", "winner");
     document
@@ -176,15 +176,15 @@ class TicTacToe {
   }
 
   markCell(cell, symbol) {
-    let symb = symbol === "X" ? "cross" : "circle";
-    let img = document.createElement("img");
+    const symb = symbol === "X" ? "cross" : "circle";
+    const img = document.createElement("img");
     img.setAttribute("class", `${symb}`);
     img.setAttribute("src", `img/${symb}.svg`);
     cell.appendChild(img);
   }
 
   #highlightWinnerCells(row, column) {
-    let symbol = this.#gameField[row][column];
+    const symbol = this.#gameField[row][column];
     const gameFileds = document.querySelectorAll(".game-field_cell");
     if (this.#checkIsWinHorizontal(row, symbol)) {
       this.#highlightHorizontal(row, gameFileds);
@@ -236,13 +236,13 @@ class TicTacToe {
 }
 
 function runGame(game) {
-  let gameFields = document.querySelectorAll(".game-field_cell");
+  const gameFields = document.querySelectorAll(".game-field_cell");
   for (gameField of gameFields) {
     gameField.addEventListener("click", (event) => {
-      let cell = event.target;
-      let cellIndex = Array.from(cell.parentNode.children).indexOf(cell);
-      let row = (cellIndex - (cellIndex % game.getN())) / game.getN();
-      let column = cellIndex % game.getN();
+      const cell = event.target;
+      const cellIndex = Array.from(cell.parentNode.children).indexOf(cell);
+      const row = (cellIndex - (cellIndex % game.getN())) / game.getN();
+      const column = cellIndex % game.getN();
       if (game.isGameEnd() || !game.isEmptyCell(row, column)) {
         return;
       }
@@ -257,8 +257,8 @@ window.addEventListener("DOMContentLoaded", () => {
   runGame(game);
 
   document.querySelector(".reset-button").addEventListener("click", () => {
-    let gameField = document.querySelector(".game-field");
-    for (let cell of gameField.childNodes) {
+    const gameField = document.querySelector(".game-field");
+    for (const cell of gameField.childNodes) {
       cell.innerHTML = "";
     }
     if (game.isGameEnd()) {
