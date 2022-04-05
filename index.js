@@ -111,9 +111,11 @@ class TicTacToe {
   }
 
   makeMove(row, column) {
-    console.log(this.#moves);
     let symbol = this.getSymbol();
     this.#gameField[row][column] = symbol;
+    if (this.#moves.length > this.#move) {
+      this.#moves = this.#moves.slice(0, this.#move);
+    }
     this.#moves[this.#move] = [row, column];
     this.#move++;
     this.printResult(row, column, symbol);
