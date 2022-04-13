@@ -263,9 +263,7 @@ function runGame(game) {
       let move = getRndInteger(0, (game.getN() ** 2) - 1);
       row = (move - (move % game.getN())) / game.getN();
       column = move % game.getN();
-      console.log(move);
       while (!game.isEmptyCell(row, column)) {
-        console.log(move);
         move = getRndInteger(0, (game.getN() ** 2) - 1);
         row = (move - (move % game.getN())) / game.getN();
         column = move % game.getN();

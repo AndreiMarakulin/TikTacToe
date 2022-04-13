@@ -1,2 +1,2 @@
-exports.host = 'localhost'
-exports.port = '7005'
+exports.host = '0.0.0.0'
+exports.port = process.env.PORT ?? 3000
