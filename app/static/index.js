@@ -110,6 +110,14 @@ class TicTacToe {
     return this.#gameEnd;
   }
 
+  get moveNumber() {
+    return this.move;
+  }
+
+  get doneMoves() {
+    return this.#moves;
+  }
+
   makeMove(row, column) {
     const symbol = this.getSymbol();
     this.#gameField[row][column] = symbol;
@@ -241,15 +249,35 @@ function runGame(game) {
     gameField.addEventListener("click", (event) => {
       const cell = event.target;
       const cellIndex = Array.from(cell.parentNode.children).indexOf(cell);
-      const row = (cellIndex - (cellIndex % game.getN())) / game.getN();
-      const column = cellIndex % game.getN();
+      let row = (cellIndex - (cellIndex % game.getN())) / game.getN();
+      let column = cellIndex % game.getN();
       if (game.isGameEnd() || !game.isEmptyCell(row, column)) {
         return;
       }
       game.markCell(cell, game.getSymbol());
       game.makeMove(row, column);
+      
+      if (game.isGameEnd()) {
+        return;
+      }
+      let move = getRndInteger(0, (game.getN() ** 2) - 1);
+      row = (move - (move % game.getN())) / game.getN();
+      column = move % game.getN();
+      console.log(move);
+      while (!game.isEmptyCell(row, column)) {
+        console.log(move);
+        move = getRndInteger(0, (game.getN() ** 2) - 1);
+        row = (move - (move % game.getN())) / game.getN();
+        column = move % game.getN();
+      }
+      game.markCell(gameFields[move], game.getSymbol());
+      game.makeMove((move - (move % game.getN())) / game.getN(), move % game.getN());
     });
   }
+
+}
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
