@@ -15,6 +15,24 @@ class TicTacToe {
       .map(() => new Array(n).fill(null));
     this.#moves = new Array();
     this.#createField(n);
+    this.Observers = [];
+  }
+
+  attach(observer) {
+    this.Observers.push(observer);
+  }
+
+  dettach(observer) {
+    const removeObserverIndex = this.Observers.indexOf(observer);
+    if (removeObserverIndex !== -1) {
+      this.Observers.splice(removeObserverIndex, 1);
+    }
+  }
+
+  notify(data) {
+    this.Observers.forEach((observer) => {
+      observer.handle(data);
+    });
   }
 
   #createField(n) {
@@ -126,6 +144,12 @@ class TicTacToe {
     }
     this.#moves[this.#move] = [row, column];
     this.#move++;
+    // simplePost(symbol, `${row}:${column}`);
+    // sendWSPost(symbol, `${row}:${column}`);
+    this.notify({
+      player: symbol,
+      move: row * this.#n + column,
+    });
     this.printResult(row, column, symbol);
   }
 
@@ -165,10 +189,14 @@ class TicTacToe {
     }
     const [row, column] = this.#moves[this.#move];
     this.#gameField[row][column] = this.getSymbol(this.#move);
-    this.markCell(
-      document.querySelectorAll(".game-field_cell")[row * this.#n + column],
-      this.#gameField[row][column]
-    );
+    // this.markCell(
+    //   document.querySelectorAll(".game-field_cell")[row * this.#n + column],
+    //   this.#gameField[row][column]
+    // );
+    this.notify({
+      player: this.getSymbol(this.#move),
+      move: row * this.#n + column,
+    })
     this.printResult(row, column, this.getSymbol(this.#move));
     this.#highlightWinnerCells(row, column);
     this.#move++;
@@ -181,14 +209,6 @@ class TicTacToe {
     document
       .querySelector(".buttons")
       .parentNode.insertBefore(div, document.querySelector(".buttons"));
-  }
-
-  markCell(cell, symbol) {
-    const symb = symbol === "X" ? "cross" : "circle";
-    const img = document.createElement("img");
-    img.setAttribute("class", `${symb}`);
-    img.setAttribute("src", `img/${symb}.svg`);
-    cell.appendChild(img);
   }
 
   #highlightWinnerCells(row, column) {
@@ -254,25 +274,41 @@ function runGame(game) {
       if (game.isGameEnd() || !game.isEmptyCell(row, column)) {
         return;
       }
-      game.markCell(cell, game.getSymbol());
+      // game.markCell(cell, game.getSymbol());
       game.makeMove(row, column);
-      
+
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("С сервера пришло сообщение", data);
+        row = (data.move - (data.move % game.getN())) / game.getN();
+        column = data.move % game.getN();
+        if (game.isEmptyCell(row, column)) {
+          game.makeMove(row, column);
+        }
+      };    
+
+
       if (game.isGameEnd()) {
         return;
       }
-      let move = getRndInteger(0, (game.getN() ** 2) - 1);
-      row = (move - (move % game.getN())) / game.getN();
-      column = move % game.getN();
-      while (!game.isEmptyCell(row, column)) {
-        move = getRndInteger(0, (game.getN() ** 2) - 1);
-        row = (move - (move % game.getN())) / game.getN();
-        column = move % game.getN();
-      }
-      game.markCell(gameFields[move], game.getSymbol());
-      game.makeMove((move - (move % game.getN())) / game.getN(), move % game.getN());
+
+      // setTimeout(() => {
+      //   let move = getRndInteger(0, game.getN() ** 2 - 1);
+      //   row = (move - (move % game.getN())) / game.getN();
+      //   column = move % game.getN();
+      //   while (!game.isEmptyCell(row, column)) {
+      //     move = getRndInteger(0, game.getN() ** 2 - 1);
+      //     row = (move - (move % game.getN())) / game.getN();
+      //     column = move % game.getN();
+      //   }
+      //   // game.markCell(gameFields[move], game.getSymbol());
+      //   game.makeMove(
+      //     (move - (move % game.getN())) / game.getN(),
+      //     move % game.getN()
+      //   );
+      // }, 250);
     });
   }
-
 }
 function getRndInteger(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -280,7 +316,10 @@ function getRndInteger(min, max) {
 
 window.addEventListener("DOMContentLoaded", () => {
   let game = new TicTacToe(3);
+  game.attach(new wsSendObserver);
+  game.attach(new markCellsObserver);
   runGame(game);
+  socket.send('{}')
 
   document.querySelector(".reset-button").addEventListener("click", () => {
     const gameField = document.querySelector(".game-field");
@@ -305,3 +344,44 @@ window.addEventListener("DOMContentLoaded", () => {
     game.goForward();
   });
 });
+
+async function simplePost(player, move) {
+  const response = await fetch("/move", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      player: player,
+      move: move,
+    }),
+  });
+  const result = await response.json();
+  console.log(result);
+}
+
+const socket = new WebSocket("ws://127.0.0.1:3000/");
+
+socket.onopen = () => {
+  console.log("Подключение установлено");
+};
+
+
+class wsSendObserver {
+  handle(data) {
+    socket.send(
+      JSON.stringify(data)
+    );
+  }
+}
+
+class markCellsObserver {
+  handle(data) {
+    const symb = data.player === "X" ? "cross" : "circle";
+    const img = document.createElement("img");
+    img.setAttribute("class", `${symb}`);
+    img.setAttribute("src", `img/${symb}.svg`);
+    const cell = document.querySelectorAll(".game-field_cell")[data.move]
+    cell.appendChild(img);
+  }
+}

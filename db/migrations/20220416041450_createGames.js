@@ -8,7 +8,7 @@
             table.increments('id');
             table.integer('player_one_id').notNullable;
             table.integer('player_two_id').notNullable;
-            table.string('result', 4);
+            table.string('result', 4).checkIn(['win', 'lose', 'draw']);
             table.foreign('player_one_id').references('id').inTable('users');
             table.foreign('player_two_id').references('id').inTable('users');
         });
