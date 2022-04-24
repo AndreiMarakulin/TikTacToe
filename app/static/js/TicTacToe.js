@@ -1,10 +1,11 @@
-class TicTacToe {
+export default class TicTacToe {
   #size;
   #field;
   #currentMove = 0;
   #symbols = { 0: "X", 1: "O" };
   #movesList = [];
   #undoMovesList = [];
+  #Observers = [];
 
   constructor(size = 3) {
     this.#size = size >= 3 ? size : 3;
@@ -24,8 +25,8 @@ class TicTacToe {
 
   isFinished() {
     return (
-      this.isDraw &&
-      this.#isWin(this.#symbols[0]) &&
+      this.isDraw() ||
+      this.#isWin(this.#symbols[0]) ||
       this.#isWin(this.#symbols[1])
     );
   }
@@ -36,28 +37,42 @@ class TicTacToe {
 
   #isWinHorizontal(symbol) {
     for (let row = 0; row < this.size; row++) {
+      let isWin = true;
       for (let column = 0; column < this.size; column++) {
         if (this.#field[this.size * row + column] !== symbol) {
-          return false;
+          isWin = false;
+          break;
         }
       }
-      return true;
+      if (isWin) {
+        return [true, row];
+      }
     }
+    return [false];
   }
 
   #isWinVertical(symbol) {
     for (let column = 0; column < this.size; column++) {
+      let isWin = true;
       for (let row = 0; row < this.size; row++) {
         if (this.#field[this.size * row + column] !== symbol) {
-          return false;
+          isWin = false;
+          break;
         }
       }
-      return true;
+      if (isWin) {
+        return [true, column];
+      }
     }
+    return [false];
   }
 
   #isWinLeftDiagonal(symbol) {
-    for (let position = 0; position < this.size; position += this.size + 1) {
+    for (
+      let position = 0;
+      position < this.size ** 2;
+      position += this.size + 1
+    ) {
       if (this.#field[position] !== symbol) {
         return false;
       }
@@ -67,7 +82,7 @@ class TicTacToe {
 
   #isWinRightDiagonal(symbol) {
     for (
-      let position = this.size - 1;
+      let position = this.size ** 2 - 1;
       position > 0;
       position += this.size - 1
     ) {
@@ -80,11 +95,26 @@ class TicTacToe {
 
   #isWin(symbol) {
     return (
-      this.#isWinHorizontal(symbol) ||
-      this.#isWinVertical(symbol) ||
+      this.#isWinHorizontal(symbol)[0] ||
+      this.#isWinVertical(symbol)[0] ||
       this.#isWinLeftDiagonal(symbol) ||
       this.#isWinRightDiagonal(symbol)
     );
+  }
+
+  winnerPosition(symbol) {
+    if (this.#isWinHorizontal(symbol)[0]) {
+      return { type: "row", row: this.#isWinHorizontal(symbol)[1] };
+    }
+    if (this.#isWinVertical(symbol)[0]) {
+      return { type: "column", column: this.#isWinVertical(symbol)[1] };
+    }
+    if (this.#isWinLeftDiagonal(symbol)) {
+      return { type: "leftDiagonal" };
+    }
+    if (this.#isWinRightDiagonal(symbol)) {
+      return { type: "rightDiagonal" };
+    }
   }
 
   isDraw() {
@@ -92,15 +122,32 @@ class TicTacToe {
   }
 
   makeMove(position) {
-    if (this.isFinished) {
-      throw Error();
+    if (this.isFinished()) {
+      return;
     }
-    if (this.isPossibleMove) {
-      throw Error();
+    if (!this.isPossibleMove(position)) {
+      return;
     }
     this.#field[position] = this.currentSymbol;
     this.#movesList.push(position);
     this.#undoMovesList = [];
+    this.notify({
+      action: "move",
+      player: this.#field[position],
+      position: position,
+    });
+
+    if (this.#isWin(this.currentSymbol)) {
+      this.notify({
+        action: "win",
+        winner: this.currentSymbol,
+        winnerPosition: this.winnerPosition(this.currentSymbol),
+      });
+    } else if (this.isDraw()) {
+      this.notify({
+        action: "draw",
+      });
+    }
     this.#currentMove++;
   }
 
@@ -112,6 +159,10 @@ class TicTacToe {
     this.#field[lastMove] = null;
     this.#undoMovesList.push(lastMove);
     this.#currentMove--;
+    this.notify({
+      action: "undo",
+      position: lastMove,
+    });
   }
 
   redo() {
@@ -121,8 +172,36 @@ class TicTacToe {
     const moveToUndo = this.#undoMovesList.pop();
     this.#field[moveToUndo] = this.currentSymbol;
     this.#movesList.push(moveToUndo);
+    if (this.#isWin(this.currentSymbol)) {
+      this.notify({
+        action: "win",
+        winner: this.currentSymbol,
+        winnerPosition: this.winnerPosition(this.currentSymbol),
+      });
+    } else if (this.isDraw()) {
+      this.notify({
+        action: "draw",
+      });
+    }
+    this.notify({
+      action: "redo",
+      player: this.#field[moveToUndo],
+      position: moveToUndo,
+    });
     this.#currentMove++;
   }
-}
 
-module.exports = TicTacToe;
+  attach(observer) {
+    this.#Observers.push(observer);
+  }
+
+  dettach(observer) {
+    this.#Observers = this.#Observers.filter((observer) => observer !== f);
+  }
+
+  notify(data) {
+    this.#Observers.forEach((observer) => {
+      observer.handle(data);
+    });
+  }
+}

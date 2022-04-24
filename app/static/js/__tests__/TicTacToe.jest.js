@@ -1,4 +1,5 @@
-const TicTacToe = require("../TicTacToe.js");
+// const TicTacToe = require("../TicTacToe.js");
+import TicTacToe from "../TicTacToe.js";
 
 describe("TicTacToe class", () => {
   test("Get field size (default size)", () => {
@@ -15,10 +16,10 @@ describe("TicTacToe class", () => {
   });
   test("Get current move number", () => {
     const game = new TicTacToe();
-    expect(game.currentMove).toBe(0)
-  })
+    expect(game.currentMove).toBe(0);
+  });
   test("Get current symbol", () => {
     const game = new TicTacToe();
-    expect(game.currentSymbol).toBe('X')
-  })
-})
+    expect(game.currentSymbol).toBe("X");
+  });
+});
