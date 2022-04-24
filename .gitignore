@@ -4,3 +4,5 @@ backend/
 
 # Optional npm cache directory
 .npm
+
+.vscode
