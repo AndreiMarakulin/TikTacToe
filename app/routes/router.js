@@ -5,7 +5,7 @@ const router = express.Router();
 const gameController = require("../controller/gameController");
 
 router.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname + "/../view/index.html"));
+  res.sendFile(path.join(__dirname + "/../../public/view/index.html"));
 });
 
 router.post("/move", (req, res) => {

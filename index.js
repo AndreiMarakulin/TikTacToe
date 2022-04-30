@@ -9,14 +9,19 @@ const PORT = process.env.PORT || 3000;
 const HOST = "127.0.0.1";
 
 app.use(express.json());
-app.use(express.static(__dirname + "/app/static"));
+app.use(express.static("./public/static"));
 const mainRouter = require("./app/routes/router");
 app.use(mainRouter);
 
+let users = 0;
+
 io.on("connection", (socket) => {
   console.log("a user connected");
+  users++;
+  console.log(users);
   socket.on("disconnect", () => {
     console.log("user disconnected");
+    users--;
   });
   socket.on("action", (msg) => {
     console.log(msg);

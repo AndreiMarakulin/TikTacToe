@@ -8,16 +8,8 @@
     "dev": "nodemon index.js",
     "test": "jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AndreiMarakulin/TikTacToe.git"
-  },
-  "author": "Andrei Marakulin",
+  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AndreiMarakulin/TikTacToe/issues"
-  },
-  "homepage": "https://github.com/AndreiMarakulin/TikTacToe#readme",
   "dependencies": {
     "express": "^4.17.3",
     "knex": "^1.0.7",
@@ -26,5 +18,8 @@
   "devDependencies": {
     "jest": "^27.5.1",
     "nodemon": "^2.0.15"
+  },
+  "jest": {
+    "modulePathIgnorePatterns": ["<rootDir>/public/"]
   }
 }
