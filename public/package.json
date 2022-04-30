@@ -1,0 +1,19 @@
+{
+  "name": "public",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^28.0.3"
+  },  
+  "type": "module",
+  "jest": {
+    "transform": {}
+  }
+}
