@@ -82,9 +82,9 @@ export default class TicTacToe {
 
   #isWinRightDiagonal(symbol) {
     for (
-      let position = this.size ** 2 - 1;
+      let position = this.size ** 2 - this.size;
       position > 0;
-      position += this.size - 1
+      position -= this.size - 1
     ) {
       if (this.#field[position] !== symbol) {
         return false;
@@ -142,10 +142,12 @@ export default class TicTacToe {
         action: "win",
         winner: this.currentSymbol,
         winnerPosition: this.winnerPosition(this.currentSymbol),
+        gameMoves: this.#movesList,
       });
     } else if (this.isDraw()) {
       this.notify({
         action: "draw",
+        gameMoves: this.#movesList,
       });
     }
     this.#currentMove++;
@@ -196,12 +198,38 @@ export default class TicTacToe {
   }
 
   dettach(observer) {
-    this.#Observers = this.#Observers.filter((observer) => observer !== f);
+    this.#Observers = this.#Observers.filter((obs) => obs !== observer);
   }
 
-  notify(data) {
+  notify(data, reflection = false) {
     this.#Observers.forEach((observer) => {
-      observer.handle(data);
+      observer.handle(data, reflection);
     });
+    if (reflection) {
+      this.#reflect(data);
+    }
+  }
+
+  #reflect(data) {
+    switch (data.action) {
+      case "move":
+        this.#field[data.position] = this.currentSymbol;
+        this.#movesList.push(data.position);
+        this.#undoMovesList = [];
+        this.#currentMove++;
+        break;
+      case "undo":
+        const lastMove = this.#movesList.pop();
+        this.#field[lastMove] = null;
+        this.#undoMovesList.push(lastMove);
+        this.#currentMove--;
+        break;
+      case "redo":
+        const moveToUndo = this.#undoMovesList.pop();
+        this.#field[moveToUndo] = this.currentSymbol;
+        this.#movesList.push(moveToUndo);
+        this.#currentMove++;
+        break;
+    }
   }
 }

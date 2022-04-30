@@ -23,6 +23,10 @@ export class TicTacToeView {
     this.field.style.gridTemplateColumns = `repeat(${size}, auto)`;
     this.#cells = document.querySelectorAll(".game-field_cell");
     this.#size = size;
+    if (this.gameEnd) {
+      this.removeResult();
+      this.gameEnd = false;
+    }
   }
 
   markCell(position, symbol) {
@@ -37,6 +41,11 @@ export class TicTacToeView {
   resetField() {
     for (const cell of this.#cells) {
       cell.innerHTML = "";
+    }
+    if (this.gameEnd) {
+      this.removeHiglight();
+      this.removeResult();
+      this.gameEnd = false;
     }
   }
 
@@ -146,5 +155,18 @@ export class markCellsObserver {
         this.view.gameEnd = true;
         break;
     }
+  }
+}
+
+export class webSocketObserver {
+  constructor(socket) {
+    this.socket = socket;
+  }
+
+  handle(data, reflection) {
+    if (reflection) {
+      return;
+    }
+    this.socket.emit("action", data);
   }
 }

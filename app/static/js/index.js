@@ -1,5 +1,10 @@
 import TicTacToe from "./TicTacToe.js";
-import { TicTacToeView, markCellsObserver } from "./TicTacVeiw.js";
+import {
+  TicTacToeView,
+  markCellsObserver,
+  webSocketObserver,
+} from "./TicTacVeiw.js";
+const socket = io();
 
 window.addEventListener("DOMContentLoaded", () => {
   const view = new TicTacToeView();
@@ -20,13 +25,9 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   view.resetButton.addEventListener("click", () => {
-    view.resetField();
-    if (view.gameEnd) {
-      view.removeHiglight();
-      view.removeResult();
-      view.gameEnd = false;
-    }
     game = createNewGame(view, game.size);
+    view.resetField();
+    socket.emit("action", { action: "reset" });
   });
 
   view.resizeButton.addEventListener("click", () => {
@@ -38,10 +39,24 @@ window.addEventListener("DOMContentLoaded", () => {
       view.gameEnd = false;
     }
   });
+
+  socket.on("action", (msg) => {
+    if (msg.action !== "reset") {
+      game.notify(msg, true);
+    } else {
+      game = createNewGame(view, game.size);
+      view.resetField();
+    }
+  });
+
+  socket.on("connect", () => {
+    console.log("Conncted");
+  });
 });
 
 const createNewGame = (view, size = 3) => {
   const game = new TicTacToe(size);
   game.attach(new markCellsObserver(view));
+  game.attach(new webSocketObserver(socket));
   return game;
 };
